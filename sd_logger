@@ -1,0 +1,115 @@
+/*
+ Карточка SD Datalogger
+
+  В этом примере показано, как регистрировать данные от трех аналоговых датчиков
+  на SD-карту, используя библиотеку SD.
+
+  Схема:
+  * Аналоговые датчики на аналоговых входов 0, 1, и 2
+  * SD-карта прилагается к шине SPI следующим образом:
+  ** MOSI - контактный 11
+  ** MISO - контакт 12
+  ** CLK - контакт 13
+  ** CS - контактный 4
+
+ created  24 Nov 2010
+ modified 9 Apr 2012
+ by Tom Igoe
+
+ This example code is in the public domain.
+
+ */
+
+#include <SPI.h>
+#include <SD.h>
+
+const int chipSelect = 4;
+
+
+
+void setup() {
+  // Open serial communications and wait for port to open:
+  // Откройте последовательный обмен данными и дождитесь, чтобы открыть порт:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+      // дождитесь последовательный порт для подключения. Необходим для родного порта USB только
+  }
+
+
+  Serial.print("Initializing SD card...");
+
+  // see if the card is present and can be initialized:
+  // смотрим если карта присутствует и может быть инициализирована:
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Card failed, or not present");
+    // don't do anything more:
+    // Ничего больше не делать:
+    return;
+  }
+  Serial.println("card initialized.");
+}
+
+void loop() {
+  // make a string for assembling the data to log:
+  // Сделать строку для сборки данных для входа:
+  String dataString = "";
+
+  int sec, min, hour, day, month, year;
+
+  dataString += String(hour);
+  dataString += ":";
+  dataString += String(min);
+  dataString += ":";
+  dataString += String(sec);
+  dataString += ";";
+  dataString += String(year);
+  dataString += "-";
+  dataString += String(month);
+  dataString += "-";
+  dataString += String(day);
+  dataString += ";";
+ 
+ 
+
+  // read three sensors and append to the string:
+  // Прочитать три датчика и добавить к строке:
+  for (int analogPin = 0; analogPin < 1; analogPin++) 
+  
+  {
+    int sensor = analogRead(analogPin);
+    dataString += String(sensor);
+    if (analogPin < 2) {
+      dataString += ",";
+    }
+  }
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  // Открыть файл. обратите внимание, что только один файл может быть открыт в одно время, Так что вы должны закрыть открытый, прежде чем открыть другой
+ 
+  File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+  // if the file is available, write to it:
+  // Если файл доступен, то записать:
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.close();
+    // print to the serial port too:
+    // Печать на последовательный порт инструмента:
+    Serial.println(dataString);
+  }
+  // if the file isn't open, pop up an error:
+  // Если файл не открыт, всплывающее сообщение об ошибке:
+  else {
+    Serial.println("error opening datalog.txt");
+  }
+}
+
+
+
+
+
+
+
+
